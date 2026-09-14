@@ -76,7 +76,19 @@
                 <div class="text-lg font-semibold text-gray-800">
                     @yield('header-title', 'Dashboard')
                 </div>
-                <div>
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        @if(auth()->user()->foto_profile)
+                            <img src="{{ asset('storage/'.auth()->user()->foto_profile) }}"
+                                alt="Foto {{ auth()->user()->name }}"
+                                class="h-9 w-9 rounded-full object-cover ring-2 ring-gray-100">
+                        @else
+                            <div class="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
+                                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                            </div>
+                        @endif
+                        <span class="hidden text-sm font-medium text-gray-700 sm:inline">{{ auth()->user()->name }}</span>
+                    </div>
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf
                         <button type="submit" class="bg-red-500 hover:bg-red-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition">

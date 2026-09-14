@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="max-w-xl bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-    <form action="{{ route('admin.user.update', $user->id) }}" method="POST">
+    <form action="{{ route('admin.user.update', $user->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
@@ -47,6 +47,18 @@
             <label class="block text-gray-700 text-sm font-semibold mb-2">No. HP</label>
             <input type="text" name="no_hp" value="{{ old('no_hp', $user->no_hp) }}"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div class="mb-6">
+            <label class="block text-gray-700 text-sm font-semibold mb-2">Foto Profil</label>
+            @if($user->foto_profile)
+                <img src="{{ asset('storage/'.$user->foto_profile) }}" alt="Foto {{ $user->name }}"
+                    class="mb-3 h-16 w-16 rounded-full object-cover">
+            @endif
+            <input type="file" name="foto_profile" accept="image/jpeg,image/png,image/jpg"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white">
+            <p class="mt-1 text-xs text-gray-500">Unggah foto baru untuk mengganti foto saat ini. Maksimal 2 MB.</p>
+            @error('foto_profile') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
         </div>
 
         <!-- Tombol Aksi -->

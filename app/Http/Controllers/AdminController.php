@@ -12,6 +12,7 @@ use App\Models\LogAktivitas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
@@ -168,8 +169,13 @@ class AdminController extends Controller
             'password' => ['required', 'string', 'min:8'],
             'role' => ['required', 'in:admin,petugas,peminjam'],
             'no_hp' => ['nullable', 'string', 'max:20'],
+            'foto_profile' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
         ]);
         $data['password'] = bcrypt($data['password']);
+
+        if ($request->hasFile('foto_profile')) {
+            $data['foto_profile'] = $request->file('foto_profile')->store('profiles', 'public');
+        }
 
         User::create($data);
 
@@ -191,10 +197,19 @@ class AdminController extends Controller
             'email' => ['required', 'email', 'unique:users,email,' . $user->id],
             'role' => ['required', 'in:admin,petugas,peminjam'],
             'no_hp' => ['nullable', 'string', 'max:20'],
+            'foto_profile' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
         ]);
 
         if ($request->filled('password')) {
             $data['password'] = bcrypt($request->password);
+        }
+
+        if ($request->hasFile('foto_profile')) {
+            if ($user->foto_profile) {
+                Storage::disk('public')->delete($user->foto_profile);
+            }
+
+            $data['foto_profile'] = $request->file('foto_profile')->store('profiles', 'public');
         }
 
         $user->update($data);
@@ -204,7 +219,13 @@ class AdminController extends Controller
 
     public function destroyUser($id)
     {
-        User::findOrFail($id)->delete();
+        $user = User::findOrFail($id);
+
+        if ($user->foto_profile) {
+            Storage::disk('public')->delete($user->foto_profile);
+        }
+
+        $user->delete();
 
         return redirect()->route('admin.user.index')->with('success', 'User berhasil dihapus.');
     }

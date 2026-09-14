@@ -18,6 +18,7 @@ return new class extends Migration
         $table->string('role')->default('peminjam'); // admin, petugas, peminjam
         $table->string('no_hp')->nullable();
         $table->text('alamat')->nullable();
+        $table->string('foto_profile')->nullable();
         $table->rememberToken();
         $table->timestamps();
     });

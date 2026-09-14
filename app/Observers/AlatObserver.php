@@ -9,11 +9,14 @@ class AlatObserver
 {
     public function created(Alat $alat)
     {
-        LogAktivitas::create([
-            'user_id' => auth()->id() ?? $alat->user_id,
-            'aktivitas' => "Menambahkan data alat baru: '{$alat->nama_alat}' (Stok: {$alat->stok}, Kondisi: {$alat->status_kondisi}).",
-        ]);
+    $userId = auth()->id() ?? \App\Models\User::where('role', 'admin')->first()->id;
+
+    LogAktivitas::create([
+        'user_id' => $userId,
+        'aktivitas' => "Menambahkan data alat baru: '{$alat->nama_alat}' (Stok: {$alat->stok}, Kondisi: {$alat->status_kondisi}).",
+    ]);
     }
+
 
     public function updated(Alat $alat)
     {

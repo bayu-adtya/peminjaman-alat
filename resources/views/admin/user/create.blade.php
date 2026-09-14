@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="max-w-xl bg-white rounded-lg shadow-sm border-gray-200 p-6">
-    <form action="{{ route('admin.user.store') }}" method="POST">
+    <form action="{{ route('admin.user.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
 
         <!-- Nama Lengkap -->
@@ -47,6 +47,14 @@
             <label class="block text-gray-700 text-sm font-semibold mb-2">No. HP (Optional)</label>
             <input type="text" name="no_hp" value="{{ old('no_hp') }}"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div class="mb-6">
+            <label class="block text-gray-700 text-sm font-semibold mb-2">Foto Profil (Optional)</label>
+            <input type="file" name="foto_profile" accept="image/jpeg,image/png,image/jpg"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white">
+            <p class="mt-1 text-xs text-gray-500">JPG atau PNG, maksimal 2 MB.</p>
+            @error('foto_profile') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
         </div>
 
         <!-- Tombol Aksi -->

@@ -7,13 +7,16 @@ use App\Models\LogAktivitas;
 
 class PengembalianObserver
 {
-    public function created(Pengembalian $pengembalian)
+   public function created(Pengembalian $pengembalian)
     {
-        LogAktivitas::create([
-            'user_id' => auth()->id() ?? $pengembalian->user_id,
-            'aktivitas' => "Menambahkan data pengembalian (ID: {$pengembalian->id}) untuk peminjaman ID {$pengembalian->peminjaman_id}, kondisi: {$pengembalian->kondisi}, denda Rp {$pengembalian->denda}.",
-        ]);
+    $userId = auth()->id() ?? \App\Models\User::where('role', 'admin')->first()->id;
+
+    LogAktivitas::create([
+        'user_id' => $userId,
+        'aktivitas' => "Menambahkan data pengembalian (ID: {$pengembalian->id}) untuk peminjaman ID {$pengembalian->peminjaman_id}, kondisi: {$pengembalian->kondisi}, denda Rp {$pengembalian->denda}.",
+    ]);
     }
+
 
     public function updated(Pengembalian $pengembalian)
     {
