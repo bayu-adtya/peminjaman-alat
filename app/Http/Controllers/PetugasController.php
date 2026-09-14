@@ -11,6 +11,27 @@ use Illuminate\Support\Facades\DB;
 class PetugasController extends Controller
 {
     /**
+     * Menampilkan ringkasan operasional petugas
+     */
+    public function dashboard()
+    {
+        $stats = [
+            'menunggu' => Peminjaman::where('status', 'diajukan')->count(),
+            'dipinjam' => Peminjaman::where('status', 'dipinjam')->count(),
+            'terlambat' => Peminjaman::where('status', 'telat')->count(),
+            'dikembalikan' => Peminjaman::where('status', 'dikembalikan')->count(),
+            'stok' => Alat::sum('stok'),
+        ];
+
+        $aktivitasTerbaru = Peminjaman::with(['user', 'detailPinjam.alat'])
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        return view('petugas.dashboard', compact('stats', 'aktivitasTerbaru'));
+    }
+
+    /**
      * Menampilkan daftar pengajuan peminjaman
      */
     public function indexPeminjaman(Request $request)

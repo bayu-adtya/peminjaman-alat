@@ -14,7 +14,7 @@
         <!-- SIDEBAR -->
         <aside class="w-64 bg-gray-900 text-white flex flex-col hidden md:flex">
             <div class="p-5 text-xl font-bold tracking-wider border-b border-gray-800">
-                PANEL ADMIN
+                PANEL {{ strtoupper(auth()->user()->role) }}
             </div>
             <nav class="flex-1 p-4 space-y-2">
                 {{-- MENU KHUSUS ADMIN --}}
@@ -40,6 +40,11 @@
                     </a>
                 @elseif(auth()->user()->role == 'petugas')
                     {{-- MENU KHUSUS PETUGAS --}}
+                    <a href="{{ route('petugas.dashboard') }}" class="block px-4 py-2 rounded-lg transition {{
+                        request()->routeIs('petugas.dashboard') ?
+                        'bg-gray-800 text-white font-medium shadow' : 'text-gray-400 hover:bg-gray-800 hover:text-white' }}">
+                        Dashboard
+                    </a>
                     <a href="{{ route('petugas.peminjaman.index') }}" class="block px-4 py-2 rounded-lg transition {{
                         request()->routeIs('petugas.peminjaman*') ?
                         'bg-gray-800 text-white font-medium shadow' : 'text-gray-400 hover:bg-gray-800 hover:text-white' }}">
