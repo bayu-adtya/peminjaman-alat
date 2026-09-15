@@ -1,112 +1,46 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Katalog Alat - Peminjam</title>
+@extends('layouts.app')
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
+@section('title', 'Katalog Alat - Peminjam')
+@section('header-title', 'Daftar Alat Tersedia')
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
-        <div class="container">
-            <a class="navbar-brand" href="#">Panel Peminjam</a>
-
-            <div class="d-flex">
-                <a href="{{ route('peminjam.riwayat') }}" class="btn btn-outline-light btn-sm me-2">
-                    Riwayat Pinjam
-                </a>
-
-                <form action="{{ route('logout') }}" method="POST" class="d-inline">
-                    @csrf
-                    <button type="submit" class="btn btn-light btn-sm text-primary">
-                        Logout
-                    </button>
-                </form>
-            </div>
+@section('content')
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
+        <div class="p-5 border-b border-gray-200 bg-gray-50">
+            <h3 class="text-lg font-bold text-gray-800">Katalog Alat</h3>
         </div>
-    </nav>
-
-    <div class="container">
-
-        @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-
-        @if(session('error'))
-            <div class="alert alert-danger">{{ session('error') }}</div>
-        @endif
-
-        <h3 class="mb-3">Katalog Alat Tersedia</h3>
-
-        <form action="{{ route('peminjam.peminjaman.ajukan') }}" method="POST">
-            @csrf
-
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-
-                    <div class="mb-3">
-                        <label class="form-label">Rencana Tanggal Kembali</label>
-                        <input type="date"
-                               name="tgl_kembali_plan"
-                               class="form-control"
-                               required>
-                    </div>
-
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th width="50">Pilih</th>
-                                <th>Nama Alat</th>
-                                <th>Kategori</th>
-                                <th>Stok Tersedia</th>
-                                <th width="150">Jumlah Pinjam</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            @forelse($alats as $index => $alat)
-                                <tr>
-                                    <td class="text-center">
-                                        <input type="checkbox"
-                                               name="alat_id[]"
-                                               value="{{ $alat->id }}"
-                                               class="form-check-input">
-                                    </td>
-
-                                    <td>{{ $alat->nama_alat }}</td>
-                                    <td>{{ $alat->kategori->nama_kategori ?? '-' }}</td>
-                                    <td>{{ $alat->stok }}</td>
-
-                                    <td>
-                                        <input type="number"
-                                               name="jumlah[]"
-                                               class="form-control form-control-sm"
-                                               value="1"
-                                               min="1"
-                                               max="{{ $alat->stok }}">
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5" class="text-center">
-                                        Tidak ada alat yang tersedia saat ini.
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-
-                    <button type="submit" class="btn btn-primary">
-                        Ajukan Peminjaman
-                    </button>
-
-                </div>
-            </div>
-        </form>
-
+        <div class="p-5">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-100 text-gray-600 text-sm uppercase tracking-wider">
+                        <th class="py-3 px-4 border-b">Gambar</th>
+                        <th class="py-3 px-4 border-b">Nama Alat</th>
+                        <th class="py-3 px-4 border-b">Kategori</th>
+                        <th class="py-3 px-4 border-b">Stok</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-700 text-sm">
+                    @forelse($alats as $alat)
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="py-3 px-4 border-b">
+                                @if($alat->gambar)
+                                    <img src="{{ asset($alat->gambar) }}" 
+                                         alt="Gambar {{ $alat->nama_alat }}" 
+                                         class="w-20 h-20 object-cover rounded">
+                                @else
+                                    <span class="text-gray-400">Tidak ada gambar</span>
+                                @endif
+                            </td>
+                            <td class="py-3 px-4 border-b">{{ $alat->nama_alat }}</td>
+                            <td class="py-3 px-4 border-b">{{ $alat->kategori->nama_kategori ?? '-' }}</td>
+                            <td class="py-3 px-4 border-b">{{ $alat->stok }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="py-4 text-center text-gray-500">Tidak ada alat tersedia saat ini.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
-
-</body>
-</html>
+@endsection
