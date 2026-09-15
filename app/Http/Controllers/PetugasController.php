@@ -10,9 +10,6 @@ use Illuminate\Support\Facades\DB;
 
 class PetugasController extends Controller
 {
-    /**
-     * Menampilkan ringkasan operasional petugas
-     */
     public function dashboard()
     {
         $stats = [
@@ -23,7 +20,7 @@ class PetugasController extends Controller
             'stok' => Alat::sum('stok'),
         ];
 
-        $aktivitasTerbaru = Peminjaman::with(['user', 'detailPinjam.alat'])
+        $aktivitasTerbaru = Peminjaman::with(['user', 'detailPinjams.alat'])
             ->latest()
             ->limit(5)
             ->get();
@@ -31,14 +28,11 @@ class PetugasController extends Controller
         return view('petugas.dashboard', compact('stats', 'aktivitasTerbaru'));
     }
 
-    /**
-     * Menampilkan daftar pengajuan peminjaman
-     */
     public function indexPeminjaman(Request $request)
     {
         $search = $request->input('search');
 
-        $peminjamans = Peminjaman::with(['user', 'detailPinjam.alat'])
+        $peminjamans = Peminjaman::with(['user', 'detailPinjams.alat'])
             ->where('status', 'diajukan')
             ->when($search, function ($query, $search) {
                 return $query->whereHas('user', function ($q) use ($search) {
@@ -51,19 +45,15 @@ class PetugasController extends Controller
         return view('petugas.peminjaman.index', compact('peminjamans', 'search'));
     }
 
-    /**
-     * Menyetujui peminjaman
-     */
     public function setujuiPeminjaman($id)
     {
         DB::beginTransaction();
 
         try {
-            $peminjaman = Peminjaman::with('detailPinjam')->findOrFail($id);
+            $peminjaman = Peminjaman::with('detailPinjams')->findOrFail($id);
             $peminjaman->update(['status' => 'dipinjam']);
 
-            // Kurangi stok alat
-            foreach ($peminjaman->detailPinjam as $detail) {
+            foreach ($peminjaman->detailPinjams as $detail) {
                 $alat = Alat::findOrFail($detail->alat_id);
                 $alat->stok -= $detail->jumlah;
                 $alat->save();
@@ -77,15 +67,12 @@ class PetugasController extends Controller
         }
     }
 
-    /**
-     * Menampilkan daftar pengembalian
-     */
     public function indexPengembalian(Request $request)
     {
         $search = $request->input('search');
 
-        $peminjamans = Peminjaman::with(['user', 'detailPinjam.alat', 'pengembalian'])
-            ->whereIn('status', ['dipinjam', 'telat', 'dikembalikan']) // ✅ pakai whereIn
+        $peminjamans = Peminjaman::with(['user', 'detailPinjams.alat', 'pengembalian'])
+            ->whereIn('status', ['dipinjam', 'telat', 'dikembalikan'])
             ->when($search, function ($query, $search) {
                 return $query->whereHas('user', function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%");
@@ -97,9 +84,6 @@ class PetugasController extends Controller
         return view('petugas.pengembalian.index', compact('peminjamans', 'search'));
     }
 
-    /**
-     * Memproses pengembalian alat
-     */
     public function prosesPengembalian(Request $request, $peminjamanId)
     {
         $request->validate([
@@ -110,9 +94,8 @@ class PetugasController extends Controller
         DB::beginTransaction();
 
         try {
-            $peminjaman = Peminjaman::with('detailPinjam')->findOrFail($peminjamanId);
+            $peminjaman = Peminjaman::with('detailPinjams')->findOrFail($peminjamanId);
 
-            // Simpan data pengembalian
             Pengembalian::create([
                 'peminjaman_id' => $peminjaman->id,
                 'tgl_kembali' => now(),
@@ -121,11 +104,9 @@ class PetugasController extends Controller
                 'petugas_id' => auth()->id(),
             ]);
 
-            // Update status peminjaman
-            $peminjaman->update(['status' => 'dikembalikan']); // ✅ konsisten pakai dikembalikan
+            $peminjaman->update(['status' => 'dikembalikan']);
 
-            // Kembalikan stok alat
-            foreach ($peminjaman->detailPinjam as $detail) {
+            foreach ($peminjaman->detailPinjams as $detail) {
                 $alat = Alat::findOrFail($detail->alat_id);
                 $alat->stok += $detail->jumlah;
                 $alat->save();
@@ -139,44 +120,30 @@ class PetugasController extends Controller
         }
     }
 
-    /**
-     * Menampilkan laporan sederhana
-     */
     public function indexLaporan(Request $request)
     {
         $status = $request->input('status');
         $dari_tanggal = $request->input('dari_tanggal');
         $sampai_tanggal = $request->input('sampai_tanggal');
 
-        $laporans = Peminjaman::with(['user', 'detailPinjam.alat', 'pengembalian'])
-            ->when($status, function ($query, $status) {
-                return $query->where('status', $status);
-            })
-            ->when($dari_tanggal && $sampai_tanggal, function ($query) use ($dari_tanggal, $sampai_tanggal) {
-                return $query->whereBetween('tgl_pinjam', [$dari_tanggal, $sampai_tanggal]);
-            })
+        $laporans = Peminjaman::with(['user', 'detailPinjams.alat', 'pengembalian'])
+            ->when($status, fn($query) => $query->where('status', $status))
+            ->when($dari_tanggal && $sampai_tanggal, fn($query) => $query->whereBetween('tgl_pinjam', [$dari_tanggal, $sampai_tanggal]))
             ->latest()
             ->get();
 
         return view('petugas.laporan.index', compact('laporans', 'status', 'dari_tanggal', 'sampai_tanggal'));
     }
 
-    /**
-     * Menampilkan halaman cetak laporan
-     */
     public function cetakLaporan(Request $request)
     {
         $status = $request->input('status');
         $dari_tanggal = $request->input('dari_tanggal');
         $sampai_tanggal = $request->input('sampai_tanggal');
 
-        $laporans = Peminjaman::with(['user', 'detailPinjam.alat', 'pengembalian'])
-            ->when($status, function ($query, $status) {
-                return $query->where('status', $status);
-            })
-            ->when($dari_tanggal && $sampai_tanggal, function ($query) use ($dari_tanggal, $sampai_tanggal) {
-                return $query->whereBetween('tgl_pinjam', [$dari_tanggal, $sampai_tanggal]);
-            })
+        $laporans = Peminjaman::with(['user', 'detailPinjams.alat', 'pengembalian'])
+            ->when($status, fn($query) => $query->where('status', $status))
+            ->when($dari_tanggal && $sampai_tanggal, fn($query) => $query->whereBetween('tgl_pinjam', [$dari_tanggal, $sampai_tanggal]))
             ->latest()
             ->get();
 

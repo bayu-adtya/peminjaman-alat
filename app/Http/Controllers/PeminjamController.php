@@ -10,18 +10,24 @@ use Illuminate\Support\Facades\DB;
 
 class PeminjamController extends Controller
 {
-    // Melihat daftar/katalog alat yang tersedia
-    public function katalogAlat()
+        
+    // Dashboard
+    public function dashboard()
     {
-        // Ambil semua alat yang stoknya masih ada
-        $alats = Alat::with('kategori')
-            ->where('stok', '>', 0)
-            ->get();
+        $totalPeminjaman = Peminjaman::where('user_id', auth()->id())->count();
+        $totalAlatDipinjam = DetailPinjam::whereHas('peminjaman', function ($query) {
+            $query->where('user_id', auth()->id());
+        })->sum('jumlah');
 
-        // Kirim data ke view katalog
-        return view('peminjam.katalog', compact('alats'));
+        return view('peminjam.dashboard', compact('totalPeminjaman', 'totalAlatDipinjam'));
     }
 
+// Melihat daftar/katalog alat yang tersedia
+    public function katalogAlat()
+    {
+        $alats = Alat::with('kategori')->where('stok', '>', 0)->get();
+        return view('peminjam.katalog', compact('alats'));
+    }
 
     public function ajukanPeminjaman(Request $request)
     {
@@ -73,4 +79,16 @@ class PeminjamController extends Controller
 
         return view('peminjam.riwayat', compact('peminjamans'));
     }
+    
+    public function pengembalian()
+{
+    $peminjamans = Peminjaman::with('detailPinjams.alat')
+        ->where('user_id', auth()->id())
+        ->where('status', 'dipinjam')
+        ->latest()
+        ->get();
+
+    return view('peminjam.pengembalian', compact('peminjamans'));
+}
+    
 }

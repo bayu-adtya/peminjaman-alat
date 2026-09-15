@@ -304,12 +304,12 @@ class AdminController extends Controller
     return redirect()->route('admin.kategori.index')->with('success', 'Kategori berhasil dihapus.');
     }
 
-    // 1. Menampilkan daftar peminjaman
+        // 1. Menampilkan daftar peminjaman
     public function indexPeminjaman(Request $request)
     {
         $search = $request->input('search');
 
-        $peminjamans = Peminjaman::with(['user', 'detailPinjam.alat'])
+        $peminjamans = Peminjaman::with(['user', 'detailPinjams.alat'])
             ->when($search, function ($query, $search) {
                 return $query->where('status', 'like', "%{$search}%")
                     ->orWhereHas('user', function ($q) use ($search) {
@@ -326,7 +326,7 @@ class AdminController extends Controller
     // 2. Menampilkan form tambah peminjaman
     public function createPeminjaman()
     {
-        $users = User::where('role', 'peminjam')->get(); // Atau ambil semua user jika bebas
+        $users = User::where('role', 'peminjam')->get();
         $alats = Alat::where('stok', '>', 0)->get();
         return view('admin.peminjaman.create', compact('users', 'alats'));
     }
@@ -347,23 +347,19 @@ class AdminController extends Controller
         DB::beginTransaction();
 
         try {
-            // Buat transaksi utama peminjaman
             $peminjaman = Peminjaman::create([
                 'user_id' => $request->user_id,
                 'tgl_pinjam' => $request->tgl_pinjam,
                 'tgl_kembali_plan' => $request->tgl_kembali_plan,
-                'status' => 'diajukan', // Status awal
+                'status' => 'diajukan',
             ]);
 
-            // Simpan detail alat yang dipinjam
             foreach ($request->alat_id as $index => $alatId) {
                 $jumlahPinjam = $request->jumlah[$index];
-
                 $alat = Alat::findOrFail($alatId);
 
-                // Validasi stok
                 if ($alat->stok < $jumlahPinjam) {
-                throw new \Exception("Stok alat '{$alat->nama_alat}' tidak mencukupi.");
+                    throw new \Exception("Stok alat '{$alat->nama_alat}' tidak mencukupi.");
                 }
 
                 DetailPinjam::create([
@@ -373,26 +369,19 @@ class AdminController extends Controller
                 ]);
             }
 
-            // Kurangi stok alat jika status langsung disetujui/dipinjam (opsional, atau dikurangi saat status berubah jadi 'dipinjam')
-
             DB::commit();
-
-            return redirect()
-                ->route('admin.peminjaman.index')
+            return redirect()->route('admin.peminjaman.index')
                 ->with('success', 'Data peminjaman berhasil diajukan.');
         } catch (\Exception $e) {
             DB::rollBack();
-
-            return back()
-                ->withInput()
-                ->with('error', $e->getMessage());
+            return back()->withInput()->with('error', $e->getMessage());
         }
     }
 
     // 4. Memperbarui status peminjaman
     public function updateStatusPeminjaman(Request $request, $id)
     {
-        $peminjaman = Peminjaman::with('detailPinjam.alat')->findOrFail($id);
+        $peminjaman = Peminjaman::with('detailPinjams.alat')->findOrFail($id);
 
         $request->validate([
             'status' => 'required|in:diajukan,dipinjam,dikembalikan,telat',
@@ -404,29 +393,20 @@ class AdminController extends Controller
             $statusLama = $peminjaman->status;
             $statusBaru = $request->status;
 
-            // Logika pengelolaan stok otomatis
             if ($statusLama != 'dipinjam' && $statusBaru == 'dipinjam') {
-
-                // Kurangi stok karena barang resmi dipinjam
-                foreach ($peminjaman->detailPinjam as $detail) {
+                foreach ($peminjaman->detailPinjams as $detail) {
                     $alat = $detail->alat;
-
                     if ($alat->stok < $detail->jumlah) {
-                    throw new \Exception("Stok alat {$alat->nama_alat} tidak mencukupi untuk dipinjam.");
+                        throw new \Exception("Stok alat {$alat->nama_alat} tidak mencukupi untuk dipinjam.");
                     }
-
                     $alat->decrement('stok', $detail->jumlah);
                 }
-
             } elseif ($statusLama == 'dipinjam' && $statusBaru == 'dikembalikan') {
-
-                // Kembalikan stok karena barang sudah dikembalikan
-                foreach ($peminjaman->detailPinjam as $detail) {
-                $detail->alat->increment('stok', $detail->jumlah);
+                foreach ($peminjaman->detailPinjams as $detail) {
+                    $detail->alat->increment('stok', $detail->jumlah);
                 }
             }
 
-            // Catat pengembalian saat status diubah menjadi selesai.
             if ($statusBaru == 'dikembalikan' && !$peminjaman->pengembalian()->exists()) {
                 Pengembalian::create([
                     'peminjaman_id' => $peminjaman->id,
@@ -440,35 +420,28 @@ class AdminController extends Controller
             $peminjaman->update(['status' => $statusBaru]);
 
             DB::commit();
-
-            return redirect()
-                ->route('admin.peminjaman.index')
+            return redirect()->route('admin.peminjaman.index')
                 ->with('success', 'Status peminjaman berhasil diperbarui.');
-
         } catch (\Exception $e) {
             DB::rollBack();
-
             return back()->with('error', $e->getMessage());
         }
     }
 
-
     // 5. Menghapus data peminjaman
     public function destroyPeminjaman($id)
     {
-        $peminjaman = Peminjaman::with('detailPinjam')->findOrFail($id);
+        $peminjaman = Peminjaman::with('detailPinjams')->findOrFail($id);
 
-        // Jika statusnya sedang dipinjam, kembalikan stok terlebih dahulu sebelum dihapus
         if ($peminjaman->status == 'dipinjam') {
-            foreach ($peminjaman->detailPinjam as $detail) {
+            foreach ($peminjaman->detailPinjams as $detail) {
                 $detail->alat->increment('stok', $detail->jumlah);
-            }   
+            }
         }
 
         $peminjaman->delete();
 
-        return redirect()
-            ->route('admin.peminjaman.index')
+        return redirect()->route('admin.peminjaman.index')
             ->with('success', 'Data peminjaman berhasil dihapus.');
     }
 
@@ -563,7 +536,7 @@ class AdminController extends Controller
             $peminjaman->update(['status' => 'dikembalikan']);
 
             // Kembalikan stok alat ke inventaris
-            foreach ($peminjaman->detailPinjam as $detail) {
+            foreach ($peminjaman->detailPinjams as $detail) {
                 $detail->alat->increment('stok', $detail->jumlah);
             }
 
@@ -594,7 +567,7 @@ class AdminController extends Controller
             if ($peminjaman) {
                 $peminjaman->update(['status' => 'dipinjam']);
 
-                foreach ($peminjaman->detailPinjam as $detail) {
+                foreach ($peminjaman->detailPinjams as $detail) {
                     $detail->alat->decrement('stok', $detail->jumlah);
                 }
             }

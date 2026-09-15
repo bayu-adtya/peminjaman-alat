@@ -195,7 +195,7 @@
 
                         <ul style="margin: 0; padding-left: 15px;">
 
-                            @foreach($item->detailPinjam as $detail)
+                            @foreach($item->detailPinjams as $detail)
 
                                 <li>
                                     {{ $detail->alat->nama_alat ?? '-' }}

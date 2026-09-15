@@ -16,6 +16,7 @@ class Peminjaman extends Model
         'tgl_pinjam',
         'tgl_kembali_plan',
         'status',
+        'kondisi_kembali',
     ];
 
     protected function casts(): array
@@ -26,18 +27,19 @@ class Peminjaman extends Model
         ];
     }
 
-    public function user(): BelongsTo
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function detailPinjam(): HasMany
+    // relasi detail pinjam (pakai jamak)
+    public function detailPinjams()
     {
-        return $this->hasMany(DetailPinjam::class);
+        return $this->hasMany(DetailPinjam::class, 'peminjaman_id');
     }
 
-    public function pengembalian(): HasOne
+    public function pengembalian()
     {
-        return $this->hasOne(Pengembalian::class);
+        return $this->hasOne(Pengembalian::class, 'peminjaman_id');
     }
 }

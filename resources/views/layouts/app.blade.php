@@ -61,6 +61,42 @@
                        'bg-gray-800 text-white font-medium shadow' : 'text-gray-400 hover:bg-gray-800 hover:text-white' }}">
                        Cetak Laporan
                     </a>
+
+
+                    @elseif(auth()->user()->role == 'peminjam')
+    {{-- MENU KHUSUS PEMINJAM --}}
+
+    <a href="{{ route('peminjam.dashboard') }}"
+       class="block px-4 py-2 rounded-lg transition {{
+           request()->routeIs('peminjam.dashboard') ?
+           'bg-gray-800 text-white font-medium shadow' :
+           'text-gray-400 hover:bg-gray-800 hover:text-white' }}">
+        Dashboard
+    </a>
+
+    <a href="{{ route('peminjam.katalog') }}"
+       class="block px-4 py-2 rounded-lg transition {{
+           request()->routeIs('peminjam.katalog') ?
+           'bg-gray-800 text-white font-medium shadow' :
+           'text-gray-400 hover:bg-gray-800 hover:text-white' }}">
+        Katalog Alat
+    </a>
+
+    <a href="{{ route('peminjam.riwayat') }}"
+       class="block px-4 py-2 rounded-lg transition {{
+           request()->routeIs('peminjam.riwayat') ?
+           'bg-gray-800 text-white font-medium shadow' :
+           'text-gray-400 hover:bg-gray-800 hover:text-white' }}">
+        Riwayat Peminjaman
+    </a>
+
+    <a href="{{ route('peminjam.pengembalian') }}"
+       class="block px-4 py-2 rounded-lg transition {{
+           request()->routeIs('peminjam.pengembalian') ?
+           'bg-gray-800 text-white font-medium shadow' :
+           'text-gray-400 hover:bg-gray-800 hover:text-white' }}">
+        Pengembalian Alat
+    </a>
                 @endif
             </nav>
             <div class="p-4 border-t border-gray-800 text-sm text-gray-400">
@@ -76,19 +112,7 @@
                 <div class="text-lg font-semibold text-gray-800">
                     @yield('header-title', 'Dashboard')
                 </div>
-                <div class="flex items-center gap-4">
-                    <div class="flex items-center gap-2">
-                        @if(auth()->user()->foto_profile)
-                            <img src="{{ asset('storage/'.auth()->user()->foto_profile) }}"
-                                alt="Foto {{ auth()->user()->name }}"
-                                class="h-9 w-9 rounded-full object-cover ring-2 ring-gray-100">
-                        @else
-                            <div class="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
-                                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                            </div>
-                        @endif
-                        <span class="hidden text-sm font-medium text-gray-700 sm:inline">{{ auth()->user()->name }}</span>
-                    </div>
+                <div>
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf
                         <button type="submit" class="bg-red-500 hover:bg-red-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition">

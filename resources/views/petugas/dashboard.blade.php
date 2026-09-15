@@ -56,7 +56,7 @@
                         <div class="min-w-0">
                             <p class="truncate font-semibold text-gray-900">{{ $item->user->name ?? 'User dihapus' }}</p>
                             <p class="mt-1 truncate text-xs text-gray-500">
-                                {{ $item->detailPinjam->map(fn ($detail) => ($detail->alat->nama_alat ?? 'Alat dihapus') . ' (' . $detail->jumlah . ')')->join(', ') }}
+                                {{ $item->detailPinjams->map(fn ($detail) => ($detail->alat->nama_alat ?? 'Alat dihapus') . ' (' . $detail->jumlah . ')')->join(', ') }}
                             </p>
                         </div>
                         <div class="shrink-0 text-right">

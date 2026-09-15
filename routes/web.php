@@ -69,19 +69,35 @@ Route::middleware(['auth', 'role:petugas,admin'])->prefix('petugas')->name('petu
     Route::get('/laporan/cetak', [PetugasController::class, 'cetakLaporan'])->name('laporan.cetak');
 });
 
-//peminjam
-Route::middleware(['auth', 'role:peminjam'])->prefix('peminjam')->name('peminjam.')->group(function () {
-    // Katalog & Pengajuan
-    Route::get('/katalog', [PeminjamController::class, 'katalogAlat'])->name('katalog');
-    Route::post('/peminjaman/ajukan', [PeminjamController::class, 'ajukanPeminjaman'])->name('peminjaman.ajukan');
-    Route::get('/riwayat', [PeminjamController::class, 'riwayatPeminjaman'])->name('riwayat');
-});
 
-// Route Tamu (Belum Login)
-Route::middleware('guest')->group(function () {
-    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [AuthController::class, 'login']);
-});
+    Route::middleware(['auth', 'role:peminjam'])
+        ->prefix('peminjam')
+        ->name('peminjam.')
+        ->group(function () {
+            // Dashboard
+            Route::get('/dashboard', [PeminjamController::class, 'dashboard'])->name('dashboard');
 
-// Route Logout (Harus sudah login)
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
+            // Katalog & Pengajuan
+            Route::get('/katalog', [PeminjamController::class, 'katalogAlat'])->name('katalog');
+            Route::post('/peminjaman/ajukan', [PeminjamController::class, 'ajukanPeminjaman'])->name('peminjaman.ajukan');
+
+            // Riwayat
+            Route::get('/riwayat', [PeminjamController::class, 'riwayatPeminjaman'])->name('riwayat');
+
+            // Pengembalian (halaman daftar pengembalian)
+            Route::get('/pengembalian', [PeminjamController::class, 'pengembalian'])->name('pengembalian');
+
+            // Aksi kembalikan alat
+            Route::post('/peminjaman/{id}/kembalikan', [PeminjamController::class, 'kembalikanAlat'])
+                ->name('peminjaman.kembalikan');
+        });
+
+    // Route Tamu (Belum Login)
+    Route::middleware('guest')->group(function () {
+        Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+        Route::post('/login', [AuthController::class, 'login']);
+    });
+
+    // Route Logout (Harus sudah login)
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
+

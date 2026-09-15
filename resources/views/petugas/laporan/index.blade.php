@@ -209,7 +209,7 @@
 
                             <ul class="list-disc list-inside space-y-1 text-xs">
 
-                                @foreach($item->detailPinjam as $detail)
+                                @foreach($item->detailPinjams as $detail)
 
                                     <li>
                                         {{ $detail->alat->nama_alat ?? '-' }}
