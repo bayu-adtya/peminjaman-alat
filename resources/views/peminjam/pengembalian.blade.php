@@ -44,7 +44,7 @@
 
                 @forelse($peminjamans as $peminjaman)
 
-                    @foreach($peminjaman->detailPinjams as $detail)
+                    @foreach($peminjaman->detailPinjam as $detail)
 
                         <tr class="hover:bg-gray-50 transition">
 

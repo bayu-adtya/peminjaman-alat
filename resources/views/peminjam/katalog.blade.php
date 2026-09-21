@@ -20,7 +20,31 @@
 
         <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
             <div class="border-b border-slate-200 bg-slate-50 px-5 py-4">
-                <h3 class="text-lg font-bold text-slate-800">Form Peminjaman</h3>
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800">Form Peminjaman</h3>
+                        <p class="mt-1 text-sm text-slate-500">Cari berdasarkan nama alat atau kategori.</p>
+                    </div>
+                    <form action="{{ route('peminjam.katalog') }}" method="GET" class="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
+                        <label for="search" class="sr-only">Cari nama alat atau kategori</label>
+                        <input
+                            type="search"
+                            id="search"
+                            name="search"
+                            value="{{ $search ?? '' }}"
+                            placeholder="Nama alat atau kategori"
+                            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 shadow-sm transition placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 sm:w-64"
+                        >
+                        <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-slate-800 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-300">
+                            Cari
+                        </button>
+                        @if($search)
+                            <a href="{{ route('peminjam.katalog') }}" class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-200">
+                                Reset
+                            </a>
+                        @endif
+                    </form>
+                </div>
             </div>
 
             <div class="p-5">
@@ -87,7 +111,11 @@
                                     @empty
                                         <tr>
                                             <td colspan="6" class="px-4 py-10 text-center text-slate-500">
-                                                Tidak ada alat tersedia saat ini.
+                                                @if($search)
+                                                    Tidak ada alat tersedia untuk pencarian "{{ $search }}".
+                                                @else
+                                                    Tidak ada alat tersedia saat ini.
+                                                @endif
                                             </td>
                                         </tr>
                                     @endforelse

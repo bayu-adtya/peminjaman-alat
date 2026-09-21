@@ -167,7 +167,7 @@ class PeminjamanController extends Controller
             DB::transaction(function () use ($peminjaman) { 
                 $peminjaman->update(['status' => 'dipinjam']); 
  
-                foreach ($peminjaman->detailPinjam as $detail) { 
+                foreach ($peminjaman->detailPinjam as $detail) {
                     // Mengunci baris alat demi validasi final sebelum stok dikurangi 
                     $alat = Alat::lockForUpdate()->findOrFail($detail->alat_id); 
                     

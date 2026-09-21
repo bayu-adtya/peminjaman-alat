@@ -309,7 +309,7 @@ class AdminController extends Controller
     {
         $search = $request->input('search');
 
-        $peminjamans = Peminjaman::with(['user', 'detailPinjams.alat'])
+        $peminjamans = Peminjaman::with(['user', 'detailPinjam.alat'])
             ->when($search, function ($query, $search) {
                 return $query->where('status', 'like', "%{$search}%")
                     ->orWhereHas('user', function ($q) use ($search) {
@@ -381,7 +381,7 @@ class AdminController extends Controller
     // 4. Memperbarui status peminjaman
     public function updateStatusPeminjaman(Request $request, $id)
     {
-        $peminjaman = Peminjaman::with('detailPinjams.alat')->findOrFail($id);
+        $peminjaman = Peminjaman::with('detailPinjam.alat')->findOrFail($id);
 
         $request->validate([
             'status' => 'required|in:diajukan,dipinjam,dikembalikan,telat',
@@ -394,7 +394,7 @@ class AdminController extends Controller
             $statusBaru = $request->status;
 
             if ($statusLama != 'dipinjam' && $statusBaru == 'dipinjam') {
-                foreach ($peminjaman->detailPinjams as $detail) {
+                foreach ($peminjaman->detailPinjam as $detail) {
                     $alat = $detail->alat;
                     if ($alat->stok < $detail->jumlah) {
                         throw new \Exception("Stok alat {$alat->nama_alat} tidak mencukupi untuk dipinjam.");
@@ -402,7 +402,7 @@ class AdminController extends Controller
                     $alat->decrement('stok', $detail->jumlah);
                 }
             } elseif ($statusLama == 'dipinjam' && $statusBaru == 'dikembalikan') {
-                foreach ($peminjaman->detailPinjams as $detail) {
+                foreach ($peminjaman->detailPinjam as $detail) {
                     $detail->alat->increment('stok', $detail->jumlah);
                 }
             }
@@ -431,10 +431,10 @@ class AdminController extends Controller
     // 5. Menghapus data peminjaman
     public function destroyPeminjaman($id)
     {
-        $peminjaman = Peminjaman::with('detailPinjams')->findOrFail($id);
+        $peminjaman = Peminjaman::with('detailPinjam')->findOrFail($id);
 
         if ($peminjaman->status == 'dipinjam') {
-            foreach ($peminjaman->detailPinjams as $detail) {
+            foreach ($peminjaman->detailPinjam as $detail) {
                 $detail->alat->increment('stok', $detail->jumlah);
             }
         }
@@ -536,7 +536,7 @@ class AdminController extends Controller
             $peminjaman->update(['status' => 'dikembalikan']);
 
             // Kembalikan stok alat ke inventaris
-            foreach ($peminjaman->detailPinjams as $detail) {
+            foreach ($peminjaman->detailPinjam as $detail) {
                 $detail->alat->increment('stok', $detail->jumlah);
             }
 
@@ -567,7 +567,7 @@ class AdminController extends Controller
             if ($peminjaman) {
                 $peminjaman->update(['status' => 'dipinjam']);
 
-                foreach ($peminjaman->detailPinjams as $detail) {
+                foreach ($peminjaman->detailPinjam as $detail) {
                     $detail->alat->decrement('stok', $detail->jumlah);
                 }
             }

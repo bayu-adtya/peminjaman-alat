@@ -14,19 +14,47 @@ class PeminjamController extends Controller
     // Dashboard
     public function dashboard()
     {
-        $totalPeminjaman = Peminjaman::where('user_id', auth()->id())->count();
-        $totalAlatDipinjam = DetailPinjam::whereHas('peminjaman', function ($query) {
-            $query->where('user_id', auth()->id());
-        })->sum('jumlah');
+    $userId = auth()->id();
 
-        return view('peminjam.dashboard', compact('totalPeminjaman', 'totalAlatDipinjam'));
+    // Hitung semua peminjaman user
+    $totalPeminjaman = Peminjaman::where('user_id', $userId)->count();
+
+    // Hitung alat yang sedang dipinjam (status dipinjam)
+    $totalAlatDipinjam = DetailPinjam::whereHas('peminjaman', function ($query) use ($userId) {
+        $query->where('user_id', $userId)
+              ->where('status', 'dipinjam'); // filter status
+    })->sum('jumlah');
+
+    // Hitung menunggu pengembalian
+    $menungguPengembalian = Peminjaman::where('user_id', $userId)
+        ->where('status', 'menunggu_pengembalian')
+        ->count();
+
+    return view('peminjam.dashboard', compact(
+        'totalPeminjaman',
+        'totalAlatDipinjam',
+        'menungguPengembalian'
+    ));
     }
 
 // Melihat daftar/katalog alat yang tersedia
-    public function katalogAlat()
+    public function katalogAlat(Request $request)
     {
-        $alats = Alat::with('kategori')->where('stok', '>', 0)->get();
-        return view('peminjam.katalog', compact('alats'));
+        $search = $request->input('search');
+
+        $alats = Alat::with('kategori')
+            ->where('stok', '>', 0)
+            ->when($search, function ($query, $search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('nama_alat', 'like', "%{$search}%")
+                        ->orWhereHas('kategori', function ($query) use ($search) {
+                            $query->where('nama_kategori', 'like', "%{$search}%");
+                        });
+                });
+            })
+            ->get();
+
+        return view('peminjam.katalog', compact('alats', 'search'));
     }
 
     public function ajukanPeminjaman(Request $request)
@@ -72,7 +100,7 @@ class PeminjamController extends Controller
     // Melihat riwayat peminjaman user yang sedang login
     public function riwayatPeminjaman()
     {
-        $peminjamans = Peminjaman::with('detailPinjams.alat')
+        $peminjamans = Peminjaman::with('detailPinjam.alat')
             ->where('user_id', auth()->id())
             ->latest()
             ->get();
@@ -82,7 +110,7 @@ class PeminjamController extends Controller
     
     public function pengembalian()
 {
-    $peminjamans = Peminjaman::with('detailPinjams.alat')
+    $peminjamans = Peminjaman::with('detailPinjam.alat')
         ->where('user_id', auth()->id())
         ->where('status', 'dipinjam')
         ->latest()

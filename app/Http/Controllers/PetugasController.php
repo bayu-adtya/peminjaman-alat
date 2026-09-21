@@ -20,7 +20,7 @@ class PetugasController extends Controller
             'stok' => Alat::sum('stok'),
         ];
 
-        $aktivitasTerbaru = Peminjaman::with(['user', 'detailPinjams.alat'])
+        $aktivitasTerbaru = Peminjaman::with(['user', 'detailPinjam.alat'])
             ->latest()
             ->limit(5)
             ->get();
@@ -32,7 +32,7 @@ class PetugasController extends Controller
     {
         $search = $request->input('search');
 
-        $peminjamans = Peminjaman::with(['user', 'detailPinjams.alat'])
+        $peminjamans = Peminjaman::with(['user', 'detailPinjam.alat'])
             ->where('status', 'diajukan')
             ->when($search, function ($query, $search) {
                 return $query->whereHas('user', function ($q) use ($search) {
@@ -50,10 +50,10 @@ class PetugasController extends Controller
         DB::beginTransaction();
 
         try {
-            $peminjaman = Peminjaman::with('detailPinjams')->findOrFail($id);
+            $peminjaman = Peminjaman::with('detailPinjam')->findOrFail($id);
             $peminjaman->update(['status' => 'dipinjam']);
 
-            foreach ($peminjaman->detailPinjams as $detail) {
+            foreach ($peminjaman->detailPinjam as $detail) {
                 $alat = Alat::findOrFail($detail->alat_id);
                 $alat->stok -= $detail->jumlah;
                 $alat->save();
@@ -71,7 +71,7 @@ class PetugasController extends Controller
     {
         $search = $request->input('search');
 
-        $peminjamans = Peminjaman::with(['user', 'detailPinjams.alat', 'pengembalian'])
+        $peminjamans = Peminjaman::with(['user', 'detailPinjam.alat', 'pengembalian'])
             ->whereIn('status', ['dipinjam', 'telat', 'dikembalikan'])
             ->when($search, function ($query, $search) {
                 return $query->whereHas('user', function ($q) use ($search) {
@@ -94,7 +94,7 @@ class PetugasController extends Controller
         DB::beginTransaction();
 
         try {
-            $peminjaman = Peminjaman::with('detailPinjams')->findOrFail($peminjamanId);
+            $peminjaman = Peminjaman::with('detailPinjam')->findOrFail($peminjamanId);
 
             Pengembalian::create([
                 'peminjaman_id' => $peminjaman->id,
@@ -106,7 +106,7 @@ class PetugasController extends Controller
 
             $peminjaman->update(['status' => 'dikembalikan']);
 
-            foreach ($peminjaman->detailPinjams as $detail) {
+            foreach ($peminjaman->detailPinjam as $detail) {
                 $alat = Alat::findOrFail($detail->alat_id);
                 $alat->stok += $detail->jumlah;
                 $alat->save();
@@ -126,7 +126,7 @@ class PetugasController extends Controller
         $dari_tanggal = $request->input('dari_tanggal');
         $sampai_tanggal = $request->input('sampai_tanggal');
 
-        $laporans = Peminjaman::with(['user', 'detailPinjams.alat', 'pengembalian'])
+        $laporans = Peminjaman::with(['user', 'detailPinjam.alat', 'pengembalian'])
             ->when($status, fn($query) => $query->where('status', $status))
             ->when($dari_tanggal && $sampai_tanggal, fn($query) => $query->whereBetween('tgl_pinjam', [$dari_tanggal, $sampai_tanggal]))
             ->latest()
@@ -141,7 +141,7 @@ class PetugasController extends Controller
         $dari_tanggal = $request->input('dari_tanggal');
         $sampai_tanggal = $request->input('sampai_tanggal');
 
-        $laporans = Peminjaman::with(['user', 'detailPinjams.alat', 'pengembalian'])
+        $laporans = Peminjaman::with(['user', 'detailPinjam.alat', 'pengembalian'])
             ->when($status, fn($query) => $query->where('status', $status))
             ->when($dari_tanggal && $sampai_tanggal, fn($query) => $query->whereBetween('tgl_pinjam', [$dari_tanggal, $sampai_tanggal]))
             ->latest()

@@ -32,8 +32,7 @@ class Peminjaman extends Model
         return $this->belongsTo(User::class);
     }
 
-    // relasi detail pinjam (pakai jamak)
-    public function detailPinjams()
+    public function detailPinjam()
     {
         return $this->hasMany(DetailPinjam::class, 'peminjaman_id');
     }
