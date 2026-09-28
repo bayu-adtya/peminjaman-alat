@@ -14,27 +14,20 @@ class PeminjamController extends Controller
     // Dashboard
     public function dashboard()
     {
-    $userId = auth()->id();
+        $userId = auth()->id();
 
-    // Hitung semua peminjaman user
-    $totalPeminjaman = Peminjaman::where('user_id', $userId)->count();
+        $stats = [
+            'total' => Peminjaman::where('user_id', $userId)->count(),
+            'dipinjam' => DetailPinjam::whereHas('peminjaman', function ($query) use ($userId) {
+                $query->where('user_id', $userId)
+                    ->where('status', 'dipinjam');
+            })->sum('jumlah'),
+            'menunggu' => Peminjaman::where('user_id', $userId)
+                ->where('status', 'dipinjam')
+                ->count(),
+        ];
 
-    // Hitung alat yang sedang dipinjam (status dipinjam)
-    $totalAlatDipinjam = DetailPinjam::whereHas('peminjaman', function ($query) use ($userId) {
-        $query->where('user_id', $userId)
-              ->where('status', 'dipinjam'); // filter status
-    })->sum('jumlah');
-
-    // Hitung menunggu pengembalian
-    $menungguPengembalian = Peminjaman::where('user_id', $userId)
-        ->where('status', 'menunggu_pengembalian')
-        ->count();
-
-    return view('peminjam.dashboard', compact(
-        'totalPeminjaman',
-        'totalAlatDipinjam',
-        'menungguPengembalian'
-    ));
+        return view('peminjam.dashboard', compact('stats'));
     }
 
 // Melihat daftar/katalog alat yang tersedia
