@@ -45,20 +45,18 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/log-aktivitas',[LogAktivitasController::class, 'index']);
         Route::get('/laporan-peminjaman', [LaporanController::class, 'index']);
     });
-
-    Route::middleware('role.petugas')->group(function () {
-    Route::post('/peminjaman/{peminjaman}/approve',
-    [PeminjamanController::class, 'approve']);
+    Route::middleware(['auth:sanctum', 'role:petugas'])->group(function () {
+    Route::post('/peminjaman/{id}/approve', [PeminjamanController::class, 'approve']);
     Route::post('/pengembalian', [PengembalianController::class, 'store']);    
     // Route untuk hak akses petugas
-    });
-
-    Route::middleware('role.peminjam')->group(function () {
+});
+    Route::middleware(['auth:sanctum', 'role:peminjam'])->group(function () {
+        Route::post('/peminjaman', [PeminjamanController::class, 'store']);
         Route::get('/katalog', [AlatController::class, 'katalog']);
         Route::post('/peminjaman', [PeminjamanController::class, 'store']);
         Route::get('/riwayat-pinjam', [PeminjamanController::class, 'riwayat']);
-        // Route untuk hak akses peminjam
-    });
+});
+
 
 });
 

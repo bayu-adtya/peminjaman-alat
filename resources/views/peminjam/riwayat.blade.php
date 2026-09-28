@@ -33,6 +33,9 @@
             </thead>
 
             <tbody class="divide-y divide-gray-200">
+                            @php
+                               $no = 1;
+                            @endphp
 
                 @forelse($peminjamans as $peminjaman)
 
@@ -40,9 +43,8 @@
 
                         <tr class="hover:bg-gray-50 transition">
 
-                            {{-- No --}}
                             <td class="px-6 py-4">
-                                {{ $loop->iteration }}
+                                {{ $no++}}
                             </td>
 
                             {{-- Nama Alat --}}

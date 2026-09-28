@@ -36,7 +36,6 @@
                     <th class="px-6 py-4">Tanggal Pinjam</th>
                     <th class="px-6 py-4">Rencana Kembali</th>
                     <th class="px-6 py-4">Status</th>
-                    <th class="px-6 py-4">Aksi</th>
                 </tr>
             </thead>
 
@@ -73,15 +72,6 @@
                                     Dipinjam
                                 </span>
                             </td>
-
-                            <td class="px-6 py-4">
-                                <button
-                                    type="button"
-                                    class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition">
-                                    Kembalikan
-                                </button>
-                            </td>
-
                         </tr>
 
                     @endforeach
