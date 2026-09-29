@@ -4,25 +4,27 @@
 @section('header-title', 'Daftar Alat Tersedia')
 
 @section('content')
-    <div class="space-y-6">
-        <div class="overflow-hidden rounded-2xl border border-blue-100 bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 shadow-lg shadow-blue-500/20">
-            <div class="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
+    <div class="mx-auto max-w-6xl space-y-6">
+        <section class="relative overflow-hidden rounded-xl bg-slate-950 px-6 py-8 text-white shadow-sm sm:px-8 sm:py-10">
+            <div class="absolute -right-8 -top-16 h-56 w-56 rounded-full border-[28px] border-emerald-400/15"></div>
+            <div class="relative flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <p class="text-xs font-semibold uppercase tracking-[0.25em] text-blue-100">Inventory</p>
-                    <h2 class="mt-2 text-2xl font-bold text-white">Katalog Alat</h2>
+                    <p class="text-sm font-medium text-emerald-300">Peminjaman alat</p>
+                    <h2 class="mt-2 text-3xl font-bold leading-tight sm:text-4xl">Katalog Alat</h2>
+                    <p class="mt-2 text-sm text-slate-300">Pilih alat yang tersedia untuk diajukan dalam peminjaman.</p>
                 </div>
-                <div class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2 text-sm text-blue-50 ring-1 ring-white/20 backdrop-blur-sm">
+                <div class="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900/70 px-4 py-3 text-sm text-slate-200">
                     <span class="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400"></span>
                     {{ $alats->count() ?? 0 }} alat tersedia
                 </div>
             </div>
-        </div>
+        </section>
 
-        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
             <div class="border-b border-slate-200 bg-slate-50 px-5 py-4">
                 <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                     <div>
-                        <h3 class="text-lg font-bold text-slate-800">Form Peminjaman</h3>
+                        <h3 class="text-lg font-semibold text-slate-900">Form Peminjaman</h3>
                         <p class="mt-1 text-sm text-slate-500">Cari berdasarkan nama alat atau kategori.</p>
                     </div>
                     <form action="{{ route('peminjam.katalog') }}" method="GET" class="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
@@ -33,13 +35,13 @@
                             name="search"
                             value="{{ $search ?? '' }}"
                             placeholder="Nama alat atau kategori"
-                            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 shadow-sm transition placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 sm:w-64"
+                            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 shadow-sm transition placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200 sm:w-64"
                         >
-                        <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-slate-800 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-300">
+                        <button type="submit" class="inline-flex items-center justify-center rounded-lg bg-slate-800 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-300">
                             Cari
                         </button>
                         @if($search)
-                            <a href="{{ route('peminjam.katalog') }}" class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-200">
+                            <a href="{{ route('peminjam.katalog') }}" class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-200">
                                 Reset
                             </a>
                         @endif
@@ -57,12 +59,12 @@
                             type="date"
                             id="tgl_kembali_plan"
                             name="tgl_kembali_plan"
-                            class="rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-800 shadow-sm transition focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200"
+                            class="rounded-lg border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-800 shadow-sm transition focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-200"
                             required
                         >
                     </div>
 
-                    <div class="overflow-hidden rounded-2xl border border-slate-200">
+                    <div class="overflow-hidden rounded-xl border border-slate-200">
                         <div class="overflow-x-auto">
                             <table class="min-w-full text-left text-sm text-slate-700">
                                 <thead class="bg-slate-100 text-slate-600">
@@ -79,7 +81,7 @@
                                     @forelse($alats as $alat)
                                         <tr class="border-t border-slate-200 transition hover:bg-slate-50">
                                             <td class="px-4 py-4 text-center">
-                                                <input type="checkbox" name="alat_id[]" value="{{ $alat->id }}" class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                                                <input type="checkbox" name="alat_id[]" value="{{ $alat->id }}" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
                                             </td>
                                             <td class="px-4 py-4">
                                                 @if($alat->gambar)
@@ -105,7 +107,7 @@
                                                        value="1"
                                                        min="1"
                                                        max="{{ $alat->stok }}"
-                                                       class="w-20 rounded-lg border border-slate-300 bg-slate-50 px-2 py-1.5 text-center text-slate-700 shadow-sm transition focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200">
+                                                       class="w-20 rounded-lg border border-slate-300 bg-slate-50 px-2 py-1.5 text-center text-slate-700 shadow-sm transition focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-200">
                                             </td>
                                         </tr>
                                     @empty
@@ -125,12 +127,12 @@
                     </div>
 
                     <div class="flex justify-end">
-                        <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-200">
+                        <button type="submit" class="inline-flex items-center justify-center rounded-lg bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-950 shadow-sm transition hover:bg-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-200">
                             Ajukan Peminjaman
                         </button>
                     </div>
                 </form>
             </div>
-        </div>
+        </section>
     </div>
 @endsection

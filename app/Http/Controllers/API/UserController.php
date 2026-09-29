@@ -78,6 +78,12 @@ class UserController extends Controller
 
     public function destroy(User $user): JsonResponse
     {
+        if ($user->peminjaman()->whereIn('status', ['dipinjam', 'telat'])->exists()) {
+            return response()->json([
+                'message' => 'Pengguna tidak dapat dihapus karena sedang meminjam alat.'
+            ], 409);
+        }
+
         DB::transaction(function () use ($user) {
             if ($user->foto_profile) {
                 Storage::disk('public')->delete($user->foto_profile);

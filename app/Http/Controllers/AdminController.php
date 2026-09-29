@@ -51,7 +51,7 @@ class AdminController extends Controller
     }
 
     // 3. Menyimpan alat baru
-    public function store(Request $request)
+  public function storeAlat(Request $request)
 {
     $validated = $request->validate([
         'nama_alat' => 'required|string|max:255',
@@ -67,13 +67,12 @@ class AdminController extends Controller
         $validated['gambar'] = $path;
     }
 
-    $alat = Alat::create($validated);
+    Alat::create($validated);
 
-    return response()->json([
-        'message' => 'Alat berhasil ditambahkan',
-        'data' => $alat
-    ], 201); // <- status 201 Created
+    return redirect()->route('admin.alat.index')
+        ->with('success', 'Data alat berhasil ditambahkan.');
 }
+
 
 
     // 4. Menampilkan form edit alat
@@ -125,6 +124,15 @@ class AdminController extends Controller
     public function destroyAlat($id)
     {
         $alat = Alat::findOrFail($id);
+
+        $sedangDipinjam = $alat->detailPinjam()
+            ->whereHas('peminjaman', fn ($query) => $query->whereIn('status', ['dipinjam', 'telat']))
+            ->exists();
+
+        if ($sedangDipinjam) {
+            return redirect()->route('admin.alat.index')
+                ->with('error', 'Alat tidak dapat dihapus karena sedang dipinjam.');
+        }
 
         // Hapus file gambar fisik jika ada
         if ($alat->gambar && file_exists(public_path($alat->gambar))) {
@@ -220,6 +228,11 @@ class AdminController extends Controller
     public function destroyUser($id)
     {
         $user = User::findOrFail($id);
+
+        if ($user->peminjaman()->whereIn('status', ['dipinjam', 'telat'])->exists()) {
+            return redirect()->route('admin.user.index')
+                ->with('error', 'Pengguna tidak dapat dihapus karena sedang meminjam alat.');
+        }
 
         if ($user->foto_profile) {
             Storage::disk('public')->delete($user->foto_profile);

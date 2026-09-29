@@ -75,6 +75,16 @@ class AlatController extends Controller
 
     public function destroy(Alat $alat): JsonResponse
     {
+        $sedangDipinjam = $alat->detailPinjam()
+            ->whereHas('peminjaman', fn ($query) => $query->whereIn('status', ['dipinjam', 'telat']))
+            ->exists();
+
+        if ($sedangDipinjam) {
+            return response()->json([
+                'message' => 'Alat tidak dapat dihapus karena sedang dipinjam.'
+            ], 409);
+        }
+
         DB::transaction(function () use ($alat) {
             if ($alat->gambar) {
                 Storage::disk('public')->delete($alat->gambar);
