@@ -35,19 +35,16 @@ Route::middleware('auth:sanctum')->group(function () {
         'update']);
         Route::delete('/peminjaman/{peminjaman}', [PeminjamanController::class,
         'destroy']);
-        Route::get('/pengembalian', [PengembalianController::class, 'index']);
-        Route::get('/pengembalian/{pengembalian}', [PengembalianController::class,
-        'show']);
-        Route::put('/pengembalian/{pengembalian}', [PengembalianController::class,
-        'update']);
-        Route::delete('/pengembalian/{pengembalian}',
-        [PengembalianController::class, 'destroy']);
         Route::get('/log-aktivitas',[LogAktivitasController::class, 'index']);
         Route::get('/laporan-peminjaman', [LaporanController::class, 'index']);
     });
     Route::middleware(['auth:sanctum', 'role:petugas'])->group(function () {
-    Route::post('/peminjaman/{id}/approve', [PeminjamanController::class, 'approve']);
-    Route::post('/pengembalian', [PengembalianController::class, 'store']);    
+        Route::post('/peminjaman/{id}/approve', [PeminjamanController::class, 'approve']);
+        Route::get('/pengembalian', [PengembalianController::class, 'index']);
+        Route::get('/pengembalian/{pengembalian}', [PengembalianController::class, 'show']);
+        Route::put('/pengembalian/{pengembalian}', [PengembalianController::class, 'update']);
+        Route::delete('/pengembalian/{pengembalian}', [PengembalianController::class, 'destroy']);
+        Route::get('/laporan-peminjaman', [LaporanController::class, 'index']);  
     // Route untuk hak akses petugas
 });
     Route::middleware(['auth:sanctum', 'role:peminjam'])->group(function () {
